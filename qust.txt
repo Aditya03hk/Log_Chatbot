@@ -1,0 +1,38 @@
+ VPC Logs Questions
+Show all rejected VPC connections.
+
+Which source IPs sent the most data?
+
+List logs where the destination IP is 192.168.1.10.
+
+How many VPC requests were accepted today?
+
+What are the top 5 IP addresses by bytes sent?
+
+⚙️ Execution Logs Questions
+List all failed Lambda executions.
+
+Which function had the longest execution time?
+
+How many times did process_order run last week?
+
+Show successful function calls and their durations.
+
+What’s the average duration of each function?
+
+👤 Access Logs Questions
+Which users accessed the /login endpoint?
+
+List failed POST requests.
+
+How many times was the /dashboard endpoint accessed?
+
+Show all requests by user ID u123.
+
+Which endpoints are accessed the most?
+
+🔁 Cross-Table/Request ID Correlation (Advanced)
+Show the full request trail for request ID abc123.
+
+For all failed executions, show the associated user ID and endpoint.
+

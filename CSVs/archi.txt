@@ -1,0 +1,86 @@
+       
+                  
+                  ┌──────────────────────┐
+                  │  User / Analyst UI   │◄──────────────┐
+                  │ (Streamlit / Web UI) │               │
+                  └──────────┬───────────┘               │
+                             │                           │
+                             ▼                           │
+         ┌──────────────────────────────┐                │
+         │  Natural Language Question   │                │
+         └────────────┬─────────────────┘                │
+                      ▼                                  │
+         ┌──────────────────────────────┐                │
+         │  Retrieval-Augmented Prompt  │                │
+         │ (LangChain / LlamaIndex)     │                │
+         └────┬─────────────────────▲───┘                │
+              │                     │                    │
+              ▼                     │                    │
+   ┌───────────────────┐       ┌──────────────┐          │
+   │ Vector Store (FAISS│◄─────┤   Embedder   │          │
+   │ or Chroma)         │      │ (e.g. Instructor /      │
+   └────────┬───────────┘      │  BGE / MiniLM)          │
+            │                  └──────────────┘          │
+            ▼                                            │
+┌────────────────────────────────────┐                   │
+│ Ingested Docs:                     │                   │
+│ • DDL / schema (auto extracted)    │                   │
+│ • Sample logs / error patterns     │                   │
+│ • FAQ / internal alert docs        │                   │
+└────────────────────────────────────┘                   │
+                                                         │
+                       ▼                                 │
+       ┌────────────────────────────────────┐            │
+       │    Open-Source LLM (via Ollama /   │◄───────────┘
+       │ llama-cpp / vLLM + Mistral/SQLCoder│
+       └────────────────────────────────────┘
+                       │
+                       ▼
+         ┌──────────────────────────┐
+         │  SQL or log-level output │
+         └──────────┬───────────────┘
+                    ▼
+         ┌──────────────────────────┐
+         │ ClickHouse / DuckDB etc │
+         │ (Execute query, fetch)  │
+         └──────────┬───────────────┘
+                    ▼
+                    LLM (answers -> summary)
+         ┌───────────────────────────────┐
+         │   Response shown in Chat UI   │
+         └───────────────────────────────┘
+    
+       
+       
+       
+       
+       SQL Result
+           ↓
+┌──────────────────────┐
+│  Result Analyzer     │
+│  (Check shape, type) │
+└─────────┬────────────┘
+          ▼
+  ┌─────────────────────────────┐
+  │ Visualizer Decision Engine  │
+  └────┬─────────────┬──────────┘
+       ▼             ▼
+┌──────────────┐ ┌──────────────┐
+│ Render Chart │ │ Text Summary │
+│ (Plotly etc) │ │ ("Avg = 324")│
+└──────┬───────┘ └──────────────┘
+       ▼
+┌───────────────────────────┐
+│   Show in Chat Interface  │
+└───────────────────────────┘
+
+
+
+
+Show me the VPC logs along with their corresponding access log entries
+
+Give me a full view of all requests from both VPC and access logs together.
+
+Which access logs were rejected but had VPC logs too?
+
+Find requests where VPC action was ACCEPT but access log returned 403
