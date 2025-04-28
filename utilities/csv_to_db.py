@@ -1,21 +1,31 @@
-import csv
 import sqlite3
 import pandas as pd
-import os
-import sys
 
+# CSV files
+access_csv = "access_logs.csv"
+execution_csv = "execution_logs.csv"
+vpc_csv = "vpc_logs.csv"
 
-conn = sqlite3.connect('logs.db')
+# SQLite DB file
+db_file = "logs.db"
 
-vpc_df = pd.read_csv("vpc_logs.csv")
-access_df = pd.read_csv("access_logs.csv")
-execution_df = pd.read_csv("execution_logs.csv")
+# Read CSVs using pandas
+access_df = pd.read_csv(access_csv)
+execution_df = pd.read_csv(execution_csv)
+vpc_df = pd.read_csv(vpc_csv)
 
-# Insert into respective tables
-vpc_df.to_sql('vpc_logs', conn, if_exists='append', index=False)
-access_df.to_sql('access_logs', conn, if_exists='append', index=False)
-execution_df.to_sql('execution_logs', conn, if_exists='append', index=False)
-conn.commit()   
+# Connect to SQLite DB (or create if it doesn't exist)
+conn = sqlite3.connect(db_file)
+
+# Save each DataFrame as a table in the database
+access_df.to_sql("access_logs", conn, if_exists="replace", index=False)
+execution_df.to_sql("execution_logs", conn, if_exists="replace", index=False)
+vpc_df.to_sql("vpc_logs", conn, if_exists="replace", index=False)
+
+# Close connection
 conn.close()
-print("Data inserted into database successfully.")
-# db_to_csv.py      
+
+print("✅ Logs successfully imported into 'logs.db' with tables:")
+print("   - access_logs")
+print("   - execution_logs")
+print("   - vpc_logs")

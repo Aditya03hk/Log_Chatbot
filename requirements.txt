@@ -13,7 +13,7 @@ plotly>=5.17.0
 openai>=1.12.0
 langchain>=0.1.7
 langchain-community>=0.0.20
-langgraph>=0.0.27  # If you're using LangGraph workflows
+langgraph>=0.0.27
 
 # Semantic Search
 faiss-cpu>=1.7.4
@@ -22,6 +22,7 @@ faiss-cpu>=1.7.4
 scikit-learn>=1.3.0
 tqdm>=4.66.0
 typing-extensions>=4.7.0
-
 sentence-transformers
-# pip install -U langchain-groq
+
+# Optional: For using Groq's LLM via LangChain
+langchain-groq
