@@ -499,46 +499,126 @@ def display_trend_analysis(start_date):
 def display_anomaly_detection(start_date):
     st.subheader("Anomaly Detection")
     
-    # High latency executions
+    # 1. Detect unusual error rate spikes
     query = f"""
-    SELECT function_name, duration_ms, timestamp
+    SELECT date(timestamp) as day, 
+           SUM(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END)*100.0/COUNT(*) as error_rate,
+           COUNT(*) as total_requests
+    FROM access_logs
+    WHERE timestamp >= '{start_date}'
+    GROUP BY day
+    ORDER BY day
+    """
+    rows, cols = run_query(query)
+    error_df = to_dataframe(rows, cols)
+    
+    if not error_df.empty:
+        # Calculate z-score for error rates
+        error_df['error_zscore'] = (error_df['error_rate'] - error_df['error_rate'].mean()) / error_df['error_rate'].std()
+        
+        # Flag anomalies (z-score > 2)
+        anomalies = error_df[error_df['error_zscore'].abs() > 2]
+        
+        fig1 = px.line(error_df, x='day', y='error_rate', 
+                      title='Daily Error Rate with Anomalies',
+                      labels={'error_rate': 'Error Rate (%)'},
+                      line_shape='spline')
+        
+        if not anomalies.empty:
+            fig1.add_trace(go.Scatter(
+                x=anomalies['day'],
+                y=anomalies['error_rate'],
+                mode='markers',
+                marker=dict(color='red', size=10),
+                name='Anomaly'
+            ))
+            for _, row in anomalies.iterrows():
+                st.warning(f"⚠️ Anomalous error rate on {row['day']}: {row['error_rate']:.1f}% "
+                          f"(Z-score: {row['error_zscore']:.1f}, {row['total_requests']} requests)")
+        
+        fig1.update_layout(**get_common_layout("Error Rate Anomalies"))
+        st.plotly_chart(fig1, use_container_width=True)
+    
+    # 2. Detect unusual latency patterns
+    query = f"""
+    SELECT date(timestamp) as day, function_name,
+           AVG(duration_ms) as avg_latency,
+           COUNT(*) as executions
     FROM execution_logs
     WHERE timestamp >= '{start_date}'
-    ORDER BY duration_ms DESC
-    LIMIT 50
+    GROUP BY day, function_name
+    ORDER BY day
     """
     rows, cols = run_query(query)
     latency_df = to_dataframe(rows, cols)
     
-    fig1 = px.scatter(latency_df, x='timestamp', y='duration_ms', color='function_name',
-                     title='High Latency Executions',
-                     hover_data=['function_name', 'duration_ms'])
-    fig1.update_layout(**get_common_layout("High Latency Executions"))
+    if not latency_df.empty:
+        # Calculate z-score per function
+        latency_df['latency_zscore'] = latency_df.groupby('function_name')['avg_latency'].transform(
+            lambda x: (x - x.mean()) / x.std()
+        )
+        
+        # Flag anomalies (z-score > 2)
+        latency_anomalies = latency_df[latency_df['latency_zscore'].abs() > 2]
+        
+        fig2 = px.line(latency_df, x='day', y='avg_latency', color='function_name',
+                      title='Daily Latency by Function with Anomalies',
+                      labels={'avg_latency': 'Average Latency (ms)'},
+                      line_shape='spline')
+        
+        if not latency_anomalies.empty:
+            fig2.add_trace(go.Scatter(
+                x=latency_anomalies['day'],
+                y=latency_anomalies['avg_latency'],
+                mode='markers',
+                marker=dict(color='red', size=10),
+                name='Anomaly'
+            ))
+            for _, row in latency_anomalies.iterrows():
+                st.error(f"⏱️ Latency anomaly for {row['function_name']} on {row['day']}: "
+                        f"{row['avg_latency']:.0f}ms (Z-score: {row['latency_zscore']:.1f}, "
+                        f"{row['executions']} executions)")
+        
+        fig2.update_layout(**get_common_layout("Latency Anomalies"))
+        st.plotly_chart(fig2, use_container_width=True)
     
-    # Failed requests by endpoint
+    # 3. Unusual traffic patterns
     query = f"""
-    SELECT endpoint, COUNT(*) as fail_count
-    FROM access_logs a
-    JOIN execution_logs e ON a.request_id = e.request_id
-    WHERE e.status = 'FAILED' AND a.timestamp >= '{start_date}'
-    GROUP BY endpoint
-    ORDER BY fail_count DESC
-    LIMIT 10
+    SELECT strftime('%H', timestamp) as hour, COUNT(*) as requests
+    FROM access_logs
+    WHERE timestamp >= '{start_date}'
+    GROUP BY hour
+    ORDER BY hour
     """
     rows, cols = run_query(query)
-    fail_df = to_dataframe(rows, cols)
+    traffic_df = to_dataframe(rows, cols)
     
-    fig2 = px.bar(fail_df, x='endpoint', y='fail_count', 
-                 title='Top Endpoints with Execution Failures',
-                 color_discrete_sequence=['#FF6692'])
-    fig2.update_layout(**get_common_layout("Top Endpoints with Execution Failures"))
-    
-    # Display charts
-    col1, col2 = st.columns(2)
-    with col1:
-        st.plotly_chart(fig1, use_container_width=True)
-    with col2:
-        st.plotly_chart(fig2, use_container_width=True)
+    if not traffic_df.empty:
+        # Calculate typical pattern (median per hour)
+        traffic_df['typical'] = traffic_df['requests'].median()
+        traffic_df['deviation'] = (traffic_df['requests'] - traffic_df['typical']) / traffic_df['typical'] * 100
+        
+        # Flag anomalies (>50% deviation from typical)
+        traffic_anomalies = traffic_df[traffic_df['deviation'].abs() > 50]
+        
+        fig3 = px.bar(traffic_df, x='hour', y='requests',
+                     title='Hourly Traffic Pattern with Anomalies',
+                     labels={'hour': 'Hour of Day', 'requests': 'Number of Requests'})
+        
+        if not traffic_anomalies.empty:
+            fig3.add_trace(go.Scatter(
+                x=traffic_anomalies['hour'],
+                y=traffic_anomalies['requests'],
+                mode='markers',
+                marker=dict(color='red', size=10),
+                name='Anomaly'
+            ))
+            for _, row in traffic_anomalies.iterrows():
+                st.info(f"📈 Traffic anomaly at {row['hour']}:00 - {row['requests']} requests "
+                       f"({row['deviation']:+.0f}% from typical)")
+        
+        fig3.update_layout(**get_common_layout("Traffic Pattern Anomalies"))
+        st.plotly_chart(fig3, use_container_width=True)
 
 # Dashboard layout with new features
 def setup_dashboard():
@@ -618,9 +698,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
