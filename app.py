@@ -8,7 +8,7 @@ from utilities.is_relevant import is_relevant_log_query_zero_shot,is_relevant_ch
 import re
 import torch
 torch.classes.__path__ = [] # add this line to manually set it to empty.
-#Can you get the correlation between the users and the success rate of the status code
+# Can you get the correlation between the users and the success rate of the status code
 
 
 st.title("Logbot - Your Log Assistant")

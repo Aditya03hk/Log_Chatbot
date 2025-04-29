@@ -74,91 +74,91 @@ def detect_alerts(start_date):
     return alerts
 
 # NEW: Heatmap visualization
-def display_heatmap(start_date):
-    st.subheader("Activity Heatmap")
+# def display_heatmap(start_date):
+#     st.subheader("Activity Heatmap")
     
-    # Hourly activity heatmap
-    query = f"""
-    SELECT 
-        strftime('%H', timestamp) as hour,
-        strftime('%w', timestamp) as weekday,
-        COUNT(*) as count
-    FROM access_logs
-    WHERE timestamp >= '{start_date}'
-    GROUP BY hour, weekday
-    """
-    rows, cols = run_query(query)
-    heat_df = to_dataframe(rows, cols)
+#     # Hourly activity heatmap
+#     query = f"""
+#     SELECT 
+#         strftime('%H', timestamp) as hour,
+#         strftime('%w', timestamp) as weekday,
+#         COUNT(*) as count
+#     FROM access_logs
+#     WHERE timestamp >= '{start_date}'
+#     GROUP BY hour, weekday
+#     """
+#     rows, cols = run_query(query)
+#     heat_df = to_dataframe(rows, cols)
     
-    if not heat_df.empty:
-        heat_df = heat_df.pivot(index='weekday', columns='hour', values='count')
-        days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-        heat_df.index = [days[int(i)] for i in heat_df.index]
+#     if not heat_df.empty:
+#         heat_df = heat_df.pivot(index='weekday', columns='hour', values='count')
+#         days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+#         heat_df.index = [days[int(i)] for i in heat_df.index]
         
-        fig = px.imshow(heat_df, 
-                       labels=dict(x="Hour of Day", y="Day of Week", color="Requests"),
-                       x=[f"{h}:00" for h in heat_df.columns],
-                       color_continuous_scale='Viridis')
-        fig.update_layout(**get_common_layout("Hourly Activity Pattern"))
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.warning("No data available for heatmap visualization")
+#         fig = px.imshow(heat_df, 
+#                        labels=dict(x="Hour of Day", y="Day of Week", color="Requests"),
+#                        x=[f"{h}:00" for h in heat_df.columns],
+#                        color_continuous_scale='Viridis')
+#         fig.update_layout(**get_common_layout("Hourly Activity Pattern"))
+#         st.plotly_chart(fig, use_container_width=True)
+#     else:
+#         st.warning("No data available for heatmap visualization")
 
 
 
 # NEW: User behavior analysis
-def display_user_behavior(start_date):
-    st.subheader("User Behavior Analysis")
+# def display_user_behavior(start_date):
+#     st.subheader("User Behavior Analysis")
     
-    # Top users by activity
-    query = f"""
-    SELECT user_id, COUNT(*) as activity_count
-    FROM access_logs
-    WHERE timestamp >= '{start_date}'
-    GROUP BY user_id
-    ORDER BY activity_count DESC
-    LIMIT 10
-    """
-    rows, cols = run_query(query)
-    user_df = to_dataframe(rows, cols)
+#     # Top users by activity
+#     query = f"""
+#     SELECT user_id, COUNT(*) as activity_count
+#     FROM access_logs
+#     WHERE timestamp >= '{start_date}'
+#     GROUP BY user_id
+#     ORDER BY activity_count DESC
+#     LIMIT 10
+#     """
+#     rows, cols = run_query(query)
+#     user_df = to_dataframe(rows, cols)
     
-    if not user_df.empty:
-        fig1 = px.bar(user_df, x='user_id', y='activity_count',
-                     title='Most Active Users',
-                     color_discrete_sequence=['#636EFA'])
-        fig1.update_layout(**get_common_layout("Most Active Users"))
+#     if not user_df.empty:
+#         fig1 = px.bar(user_df, x='user_id', y='activity_count',
+#                      title='Most Active Users',
+#                      color_discrete_sequence=['#636EFA'])
+#         fig1.update_layout(**get_common_layout("Most Active Users"))
         
-        # User session analysis
-        query = f"""
-        SELECT user_id, 
-               COUNT(DISTINCT date(timestamp)) as active_days,
-               AVG(strftime('%s', timestamp) - 
-                   LAG(strftime('%s', timestamp)) OVER (PARTITION BY user_id ORDER BY timestamp)) as avg_time_between_requests
-        FROM access_logs
-        WHERE timestamp >= '{start_date}'
-        GROUP BY user_id
-        HAVING active_days > 1
-        LIMIT 10
-        """
-        rows, cols = run_query(query)
-        session_df = to_dataframe(rows, cols)
+#         # User session analysis
+#         query = f"""
+#         SELECT user_id, 
+#                COUNT(DISTINCT date(timestamp)) as active_days,
+#                AVG(strftime('%s', timestamp) - 
+#                    LAG(strftime('%s', timestamp)) OVER (PARTITION BY user_id ORDER BY timestamp)) as avg_time_between_requests
+#         FROM access_logs
+#         WHERE timestamp >= '{start_date}'
+#         GROUP BY user_id
+#         HAVING active_days > 1
+#         LIMIT 10
+#         """
+#         rows, cols = run_query(query)
+#         session_df = to_dataframe(rows, cols)
         
-        if not session_df.empty:
-            fig2 = px.scatter(session_df, x='active_days', y='avg_time_between_requests',
-                            size='avg_time_between_requests', color='user_id',
-                            title='User Engagement Patterns',
-                            hover_name='user_id')
-            fig2.update_layout(**get_common_layout("User Engagement Patterns"))
+#         if not session_df.empty:
+#             fig2 = px.scatter(session_df, x='active_days', y='avg_time_between_requests',
+#                             size='avg_time_between_requests', color='user_id',
+#                             title='User Engagement Patterns',
+#                             hover_name='user_id')
+#             fig2.update_layout(**get_common_layout("User Engagement Patterns"))
             
-            col1, col2 = st.columns(2)
-            with col1:
-                st.plotly_chart(fig1, use_container_width=True)
-            with col2:
-                st.plotly_chart(fig2, use_container_width=True)
-        else:
-            st.plotly_chart(fig1, use_container_width=True)
-    else:
-        st.warning("No user behavior data available")
+#             col1, col2 = st.columns(2)
+#             with col1:
+#                 st.plotly_chart(fig1, use_container_width=True)
+#             with col2:
+#                 st.plotly_chart(fig2, use_container_width=True)
+#         else:
+#             st.plotly_chart(fig1, use_container_width=True)
+#     else:
+#         st.warning("No user behavior data available")
 
 # NEW: Performance benchmarking
 def display_performance_benchmarks(start_date):
@@ -183,22 +183,21 @@ def display_performance_benchmarks(start_date):
         current_val = run_query(current_query)[0][0][0] or 0
         prev_val = run_query(prev_query)[0][0][0] or 0
         
-        change = ((current_val - prev_val) / prev_val * 100) if prev_val != 0 else 0
-        results.append((name, current_val, prev_val, change))
+        # change = ((current_val - prev_val) / prev_val * 100) if prev_val != 0 else 0
+        results.append((name, current_val))
     
-    bench_df = pd.DataFrame(results, columns=['Metric', 'Current', 'Previous', 'Change (%)'])
+    bench_df = pd.DataFrame(results, columns=['Metric', 'Current'])
     
     # Display metrics with delta indicators
     cols = st.columns(len(metrics))
-    for idx, (col, (name, current, previous, change)) in enumerate(zip(cols, results)):
-        delta = f"{change:.1f}%" if not np.isnan(change) else "N/A"
+    for idx, (col, (name, current)) in enumerate(zip(cols, results)):
+        # delta = f"{change:.1f}%" if not np.isnan(change) else "N/A"
         col.metric(name, 
-                  f"{current:.1f}" if isinstance(current, float) else f"{current:,}",
-                  delta=delta)
+                  f"{current:.1f}" if isinstance(current, float) else f"{current:,}")
     
     # Trend comparison chart
     if not bench_df.empty:
-        fig = px.bar(bench_df, x='Metric', y=['Current', 'Previous'],
+        fig = px.bar(bench_df, x='Metric', y=['Current'],
                     barmode='group', title='Performance Comparison',
                     text_auto=True)
         fig.update_layout(**get_common_layout("Performance Benchmarks"))
@@ -543,7 +542,7 @@ def display_anomaly_detection(start_date):
 
 # Dashboard layout with new features
 def setup_dashboard():
-    st.set_page_config(layout="wide", page_title="Log Analysis Dashboard")
+    st.set_page_config(layout="wide", page_title="Log Analysis Dashboard", page_icon="📊")
     st.title("Log Analysis Dashboard")
     
     # Sidebar filters with date range picker
@@ -585,7 +584,7 @@ def main():
     # Create tabs for different sections
     tab_names = [
         "Overview", "VPC Logs", "Access Logs", "Execution Logs", 
-        "Trends", "Anomalies", "User Behavior", "Benchmarks"
+        "Trends", "Anomalies", "Benchmarks"
     ]
    
     tabs = st.tabs(tab_names)
@@ -593,7 +592,7 @@ def main():
     with tabs[0]:  # Overview
         display_kpis(start_date)
         display_correlation_analysis(start_date)
-        display_heatmap(start_date)
+        # display_heatmap(start_date)
     
     with tabs[1]:  # VPC Logs
         display_vpc_analysis(start_date)
@@ -610,12 +609,18 @@ def main():
     with tabs[5]:  # Anomalies
         display_anomaly_detection(start_date)
     
-    with tabs[6]:  # User Behavior
-        display_user_behavior(start_date)
+    # with tabs[6]:  # User Behavior
+    #     display_user_behavior(start_date)
     
     
-    with tabs[7]:  # Benchmarks
+    with tabs[6]:  # Benchmarks
         display_performance_benchmarks(start_date)
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
