@@ -151,9 +151,6 @@ Try these in the Logbot interface:
 ### Missing dependencies:
 - Run `pip install -r requirements.txt` again.
 
-### CUDA-related errors:
-- Install the appropriate PyTorch version for your system.
-
 ### API key errors:
 - Check your `.env` file has valid keys.
 - Ensure environment variables are loaded before running the apps.
