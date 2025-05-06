@@ -21,6 +21,7 @@ if "chat_history" not in st.session_state:
 # Text input area styled like a chatbot prompt
 user_input = st.chat_input("Ask me anything about your logs")
 
+
 # Handle input
 if user_input:
     with st.spinner("Thinking real hard..."):

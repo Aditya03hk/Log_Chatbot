@@ -34,7 +34,7 @@ def run_sql_llm(question:str)-> dict:
         answer : str
 
     # Initialize LLM (Gemma via Groq)
-    llm = init_chat_model("gemma2-9b-it", model_provider="groq")
+    llm = init_chat_model("gemma2-9b-it", model_provider="groq", temperature=0.0)
 
     # CUSTOM PROMPT FOR LOG ANALYSIS (RAG-style contextual guidance)
     CUSTOM_PROMPT = """
@@ -191,7 +191,7 @@ def general_answers(question:str,mode="normal")->str:
     os.environ["LANGSMITH_API_KEY"] = os.environ.get("LANGSMITH_API_KEY", "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")
     os.environ["LANGSMITH_TRACING"] = "false"
     os.environ["GROQ_API_KEY"] = os.environ.get("GROQ_API_KEY", "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")
-    llm = init_chat_model("gemma2-9b-it", model_provider="groq")
+    llm = init_chat_model("gemma2-9b-it", model_provider="groq",  temperature=0.0)
     prompt = ""
     if mode=="error":
         prompt = f"""
