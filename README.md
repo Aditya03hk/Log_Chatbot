@@ -153,6 +153,4 @@ Try these in the Logbot interface:
 
 ---
 
-## 📄 License
 
-This project is open source and available under the [MIT License](LICENSE).
