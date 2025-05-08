@@ -1,4 +1,4 @@
-# Log Analysis Dashboard 
+# Log Analysis 
 
 ## Overview
 
@@ -89,10 +89,6 @@ python csv_to_db.py
 streamlit run app.py
 ```
 
-### Option 2: Run Monitoring Dashboard
-```bash
-streamlit run monitor2.py
-```
 
 Both applications will open in your default browser at [http://localhost:8501](http://localhost:8501)
 
