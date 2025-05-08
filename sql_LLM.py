@@ -137,6 +137,7 @@ def run_sql_llm(question:str)-> dict:
         result = structured_llm.invoke(prompt)
         return {"query": result["query"]}
 
+
     # Step 2: SQL execution
     def execute_query(state: State):
         # execute_query_tool = QuerySQLDatabaseTool(db=db)

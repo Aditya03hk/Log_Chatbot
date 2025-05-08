@@ -536,12 +536,13 @@ DEFAULT_DATE_RANGE = TimeRange.LAST_7D
 # THEME CONFIGURATION
 # ==============================================
 def configure_theme():
-    st.set_page_config(
-        layout="wide", 
-        page_title="Cloud Log Analytics Dashboard", 
-        page_icon="📊",
-        initial_sidebar_state="expanded"
-    )
+    pass
+    # st.set_page_config(
+    #     layout="wide", 
+    #     page_title="Cloud Log Analytics Dashboard", 
+    #     page_icon="📊",
+    #     initial_sidebar_state="expanded"
+    # )
     
     # Custom CSS for better styling
     st.markdown("""
@@ -1185,5 +1186,5 @@ def main():
         st.error(f"❌ Critical application error: {str(e)}")
         st.stop()
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
